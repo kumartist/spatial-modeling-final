@@ -214,6 +214,8 @@ function buildCrab(x, y, z) {
         height: 1.1,
     };
 
+    // Move crab slightly downward so it sits better on the ground
+    enemy.position.z = z - 0.5;
     updateGroupPosition(group, enemy.position);
     enemies.push(enemy);
     occluders.push(group);
