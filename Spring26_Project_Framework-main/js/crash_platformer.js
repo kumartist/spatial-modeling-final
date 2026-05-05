@@ -555,7 +555,7 @@ function updateCamera() {
 }
 
 function updateHUD() {
-    const remainingBoxes = boxes.filter((box) => !box.dead).length;
+    const remainingBoxes = boxes.filter((box) => !box.dead).length - 3;
     const remainingCrabs = enemies.filter((enemy) => !enemy.dead).length;
     statusElement.textContent = `Boxes left: ${remainingBoxes} | Crabs left: ${remainingCrabs} | Spin with X`;
 }
