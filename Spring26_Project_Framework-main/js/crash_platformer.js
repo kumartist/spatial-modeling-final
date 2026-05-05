@@ -519,7 +519,7 @@ function updatePlayer(deltaTime) {
         flipAxis.set(0, 1, 0);
     }
     flipAxis.normalize();
-    const qFlip = new THREE.Quaternion().setFromAxisAngle(flipAxis, flipAngle);
+    const qFlip = new THREE.Quaternion().setFromAxisAngle(flipAxis, -flipAngle);
     const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), player.baseYaw + spinAngle);
     const qTotal = qBase.clone().multiply(qFlip).multiply(qYaw);
     player.group.quaternion.copy(qTotal);
