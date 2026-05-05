@@ -149,6 +149,10 @@ function buildPlayer() {
         position: new THREE.Vector3(-1.5, 1.8, 0),
         velocity: new THREE.Vector3(0, 0, 0),
         facing: 1,
+        forward: new THREE.Vector2(0, 1),
+        baseYaw: 0,
+        // Base rotation to orient the model upright (fix lying-on-back default)
+        baseRotation: new THREE.Euler(-Math.PI / 2, 0, 0, 'XYZ'),
         onGround: false,
         jumpFlipTimer: 0,
         jumpFlipDuration: 0.7,
@@ -402,6 +406,7 @@ function updatePlayer(deltaTime) {
     const inputX = moveRight - moveLeft;
     const inputY = moveForward - moveBackward;
     const moveLength = Math.hypot(inputX, inputY) || 1;
+    const inputMag = Math.hypot(inputX, inputY);
     const desiredSpeed = 3.6;
     const desiredVX = (inputX / moveLength) * desiredSpeed * (inputX !== 0 || inputY !== 0 ? 1 : 0);
     const desiredVY = (inputY / moveLength) * desiredSpeed * (inputX !== 0 || inputY !== 0 ? 1 : 0);
@@ -410,16 +415,35 @@ function updatePlayer(deltaTime) {
     player.velocity.x += (desiredVX - player.velocity.x) * clamp(acceleration * deltaTime, 0, 1);
     player.velocity.y += (desiredVY - player.velocity.y) * clamp(acceleration * deltaTime, 0, 1);
 
-    if (Math.abs(player.velocity.y) > 0.1) {
+    // Update facing and forward direction when movement keys pressed
+    if (inputMag > 0.001) {
+        const nx = inputX / inputMag;
+        const ny = inputY / inputMag;
+        player.forward.set(nx, ny);
+        player.baseYaw = Math.atan2(-nx, ny);
+        player.facing = player.forward.y >= 0 ? 1 : -1;
+    } else if (Math.abs(player.velocity.y) > 0.1) {
         player.facing = player.velocity.y >= 0 ? 1 : -1;
-    } else if (inputY !== 0) {
-        player.facing = inputY >= 0 ? 1 : -1;
     }
 
     if (jumpPressed && player.onGround) {
         player.velocity.z = 9.2;
         player.onGround = false;
-        if (inputY > 0 || player.velocity.y > 0.5) {
+        // Determine if the jump is in the forward direction to trigger a front flip
+        let movementDirX = 0;
+        let movementDirY = 0;
+        if (inputMag > 0.001) {
+            movementDirX = inputX / inputMag;
+            movementDirY = inputY / inputMag;
+        } else {
+            const velMag = Math.hypot(player.velocity.x, player.velocity.y);
+            if (velMag > 0.25) {
+                movementDirX = player.velocity.x / velMag;
+                movementDirY = player.velocity.y / velMag;
+            }
+        }
+        const dot = movementDirX * player.forward.x + movementDirY * player.forward.y;
+        if (dot > 0.5) {
             player.jumpFlipTimer = player.jumpFlipDuration;
         }
     }
@@ -487,11 +511,10 @@ function updatePlayer(deltaTime) {
     const spinAngle = player.spinTimer > 0 ? (1 - player.spinTimer / player.spinDuration) * Math.PI * 8 : 0;
     const flipAngle = player.jumpFlipTimer > 0 ? (1 - player.jumpFlipTimer / player.jumpFlipDuration) * Math.PI * 2 : 0;
 
-    player.group.rotation.set(0, 0, 0);
-    player.group.rotation.z = spinAngle;
-    if (flipAngle > 0) {
-        player.group.rotation.x = flipAngle;
-    }
+    // Apply base upright rotation, then apply flip (x), and yaw+spin (z)
+    player.group.rotation.copy(player.baseRotation);
+    player.group.rotation.x += flipAngle;
+    player.group.rotation.z += player.baseYaw + spinAngle;
     z_up_set_object_position(player.group, player.position.x, player.position.y, player.position.z + 0.05 + walkBob);
 }
 
