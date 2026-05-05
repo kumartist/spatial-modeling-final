@@ -6,6 +6,10 @@ const camera = engine.camera;
 const statusElement = document.getElementById('status');
 
 engine.controls.enabled = false;
+engine.controls.enableRotate = false;
+engine.controls.enableZoom = false;
+engine.controls.enablePan = false;
+engine.controls.update = () => {};
 engine.camera.fov = 60;
 engine.camera.near = 0.1;
 engine.camera.far = 150;
@@ -334,92 +338,6 @@ function updateSpinAttack() {
     }
 }
 
-function rayOcclusionPenalty(cameraPosition, targetPosition) {
-    const direction = targetPosition.clone().sub(cameraPosition);
-    const distance = direction.length();
-    if (distance < 0.001) {
-        return 0;
-    }
-
-    tempRaycaster.set(cameraPosition, direction.normalize());
-    tempRaycaster.far = distance;
-    const hits = tempRaycaster.intersectObjects(occluders, true);
-    if (!hits.length) {
-        return 0;
-    }
-
-    const hit = hits[0];
-    if (hit.distance >= distance) {
-        return 0;
-    }
-
-    const normalizedDepth = 1 - hit.distance / distance;
-    return 4.0 * normalizedDepth * normalizedDepth;
-}
-
-function cameraObjective(candidatePosition, focusTarget, forwardSign) {
-    optimizationCamera.position.copy(candidatePosition);
-    optimizationCamera.lookAt(focusTarget);
-    optimizationCamera.updateMatrixWorld(true);
-
-    const playerCenter = zUpToYUpVector(player.position.x, player.position.y, player.position.z + 1.15);
-    const lookAhead = zUpToYUpVector(player.position.x, player.position.y + forwardSign * 4.0, player.position.z + 1.25);
-    const bodyCenter = zUpToYUpVector(player.position.x, player.position.y, player.position.z + 0.8);
-
-    const playerNdc = playerCenter.clone().project(optimizationCamera);
-    const aheadNdc = lookAhead.clone().project(optimizationCamera);
-    const bodyNdc = bodyCenter.clone().project(optimizationCamera);
-
-    const visibilityPenalty =
-        (playerNdc.x * playerNdc.x) +
-        Math.pow(playerNdc.y + 0.18, 2) +
-        0.65 * (aheadNdc.x * aheadNdc.x) +
-        0.45 * Math.pow(aheadNdc.y - 0.15, 2) +
-        0.15 * (bodyNdc.x * bodyNdc.x + bodyNdc.y * bodyNdc.y);
-
-    const desiredDistance = 7.25;
-    const distancePenalty = Math.pow(candidatePosition.distanceTo(focusTarget) - desiredDistance, 2);
-    const smoothnessPenalty = camera.position.distanceTo(candidatePosition) * camera.position.distanceTo(candidatePosition) * 0.28;
-    const occlusionPenalty = rayOcclusionPenalty(candidatePosition, playerCenter) + 0.7 * rayOcclusionPenalty(candidatePosition, lookAhead);
-
-    return 4.2 * visibilityPenalty + 0.75 * distancePenalty + occlusionPenalty + smoothnessPenalty;
-}
-
-function optimizeCameraPosition(forwardSign) {
-    const playerCenter = zUpToYUpVector(player.position.x, player.position.y, player.position.z + 1.05);
-    const desiredBehind = zUpToYUpVector(-1.2 * forwardSign, -4.6 * forwardSign, 2.7);
-    const target = playerCenter.clone().add(zUpToYUpVector(0, forwardSign * 1.8, 0.55));
-
-    cameraCandidate.copy(camera.position).lerp(playerCenter.clone().add(desiredBehind), 0.35);
-
-    const stepSize = 0.055;
-    const epsilon = 0.12;
-
-    for (let iteration = 0; iteration < 4; iteration++) {
-        const centerCost = cameraObjective(cameraCandidate, target, forwardSign);
-
-        cameraGradient.set(0, 0, 0);
-
-        tempVecA.copy(cameraCandidate);
-        tempVecA.x += epsilon;
-        cameraGradient.x = (cameraObjective(tempVecA, target, forwardSign) - centerCost) / epsilon;
-
-        tempVecA.copy(cameraCandidate);
-        tempVecA.y += epsilon;
-        cameraGradient.y = (cameraObjective(tempVecA, target, forwardSign) - centerCost) / epsilon;
-
-        tempVecA.copy(cameraCandidate);
-        tempVecA.z += epsilon;
-        cameraGradient.z = (cameraObjective(tempVecA, target, forwardSign) - centerCost) / epsilon;
-
-        cameraCandidate.addScaledVector(cameraGradient, -stepSize);
-        cameraCandidate.z = Math.max(cameraCandidate.z, player.position.z + 1.8);
-    }
-
-    camera.position.copy(cameraCandidate);
-    camera.lookAt(target);
-    camera.updateMatrixWorld(true);
-}
 
 function buildLevel() {
     addGroundSegment(0, 9, 7.0, 18.0, 0, 0x6d8f45);
@@ -591,43 +509,9 @@ function updateEnemyLogic(deltaTime) {
 }
 
 function updateCamera() {
-    const forwardSign = player.facing >= 0 ? 1 : -1;
-    const playerCenter = zUpToYUpVector(player.position.x, player.position.y, player.position.z + 1.05);
-    const desiredBehind = zUpToYUpVector(-1.2 * forwardSign, -4.6 * forwardSign, 2.7);
-    const target = playerCenter.clone().add(zUpToYUpVector(0, forwardSign * 1.8, 0.55));
+    const cameraPosition = zUpToYUpVector(0, player.position.y - 6.0, 3.8);
 
-    cameraCandidate.copy(camera.position).lerp(playerCenter.clone().add(desiredBehind), 0.35);
-
-    const stepSize = 0.055;
-    const epsilon = 0.12;
-
-    for (let iteration = 0; iteration < 4; iteration++) {
-        const centerCost = cameraObjective(cameraCandidate, target, forwardSign);
-        cameraGradient.set(0, 0, 0);
-
-        tempVecA.copy(cameraCandidate);
-        tempVecA.x += epsilon;
-        cameraGradient.x = (cameraObjective(tempVecA, target, forwardSign) - centerCost) / epsilon;
-
-        tempVecA.copy(cameraCandidate);
-        tempVecA.y += epsilon;
-        cameraGradient.y = (cameraObjective(tempVecA, target, forwardSign) - centerCost) / epsilon;
-
-        tempVecA.copy(cameraCandidate);
-        tempVecA.z += epsilon;
-        cameraGradient.z = (cameraObjective(tempVecA, target, forwardSign) - centerCost) / epsilon;
-
-        cameraCandidate.addScaledVector(cameraGradient, -stepSize);
-        cameraCandidate.z = Math.max(cameraCandidate.z, player.position.z + 1.8);
-    }
-
-    camera.position.copy(cameraCandidate);
-    camera.lookAt(target);
-    camera.updateMatrixWorld(true);
-
-    if (player.hurtTimer > 0) {
-        camera.position.add(new THREE.Vector3(Math.sin(engine.get_time_elapsed() * 70) * 0.04, Math.cos(engine.get_time_elapsed() * 54) * 0.04, 0));
-    }
+    camera.position.copy(cameraPosition);
 }
 
 function updateHUD() {
@@ -648,10 +532,9 @@ function updateScene() {
 const player = buildPlayer();
 buildLevel();
 updateGroupPosition(player.group, player.position);
-const initialCameraPosition = zUpToYUpVector(0, -5.8, 3.2);
-const initialCameraTarget = zUpToYUpVector(0, 4.0, 1.6);
+const initialCameraPosition = zUpToYUpVector(0, -5.8, 3.8);
 camera.position.copy(initialCameraPosition);
-camera.lookAt(initialCameraTarget);
+camera.lookAt(zUpToYUpVector(0, player.position.y + 20.0, player.position.z + 1.15));
 
 engine.animation_loop(() => {
     updateScene();
