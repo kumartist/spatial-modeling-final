@@ -417,7 +417,7 @@ function updatePlayer(deltaTime) {
     }
 
     if (jumpPressed && player.onGround) {
-        player.velocity.z = 6.2;
+        player.velocity.z = 9.2;
         player.onGround = false;
         if (inputY > 0 || player.velocity.y > 0.5) {
             player.jumpFlipTimer = player.jumpFlipDuration;
