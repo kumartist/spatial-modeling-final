@@ -197,6 +197,8 @@ function buildCrab(x, y, z) {
     eyeDotR.position.set(0.11, -0.18, 1.12);
     group.add(eyeDotR);
 
+    // Orient crab: rotate 90deg forward (X) then 90deg clockwise horizontally (Z)
+    group.rotation.set(-Math.PI / 2, 0, -Math.PI / 2);
     engine.scene.add(group);
 
     const enemy = {
