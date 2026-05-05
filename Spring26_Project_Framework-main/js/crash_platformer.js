@@ -285,7 +285,12 @@ function resolvePlayerObstacleCollision(object) {
 
 function destroyEntity(entity) {
     entity.dead = true;
-    entity.group.visible = false;
+    if (entity.group) {
+        entity.group.visible = false;
+    }
+    if (entity.mesh) {
+        entity.mesh.visible = false;
+    }
 }
 
 function updateEnemy(enemy, deltaTime) {
