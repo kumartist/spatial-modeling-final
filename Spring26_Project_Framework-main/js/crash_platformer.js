@@ -511,10 +511,18 @@ function updatePlayer(deltaTime) {
     const spinAngle = player.spinTimer > 0 ? (1 - player.spinTimer / player.spinDuration) * Math.PI * 8 : 0;
     const flipAngle = player.jumpFlipTimer > 0 ? (1 - player.jumpFlipTimer / player.jumpFlipDuration) * Math.PI * 2 : 0;
 
-    // Apply base upright rotation, then apply flip (x), and yaw+spin (z)
-    player.group.rotation.copy(player.baseRotation);
-    player.group.rotation.x += flipAngle;
-    player.group.rotation.z += player.baseYaw + spinAngle;
+    // Compose base upright rotation, a flip around the lateral axis
+    // (perpendicular to the forward vector), and yaw+spin around Z.
+    const qBase = new THREE.Quaternion().setFromEuler(player.baseRotation);
+    const flipAxis = new THREE.Vector3(player.forward.y, -player.forward.x, 0);
+    if (flipAxis.lengthSq() < 1e-6) {
+        flipAxis.set(0, 1, 0);
+    }
+    flipAxis.normalize();
+    const qFlip = new THREE.Quaternion().setFromAxisAngle(flipAxis, flipAngle);
+    const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), player.baseYaw + spinAngle);
+    const qTotal = qBase.clone().multiply(qFlip).multiply(qYaw);
+    player.group.quaternion.copy(qTotal);
     z_up_set_object_position(player.group, player.position.x, player.position.y, player.position.z + 0.05 + walkBob);
 }
 
