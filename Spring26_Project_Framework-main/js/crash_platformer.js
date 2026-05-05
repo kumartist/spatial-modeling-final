@@ -509,7 +509,7 @@ function updateEnemyLogic(deltaTime) {
 }
 
 function updateCamera() {
-    const cameraPosition = zUpToYUpVector(0, player.position.y - 6.0, 3.8);
+    const cameraPosition = zUpToYUpVector(0, player.position.y - 6.0, 3.2);
 
     camera.position.copy(cameraPosition);
 }
@@ -532,7 +532,7 @@ function updateScene() {
 const player = buildPlayer();
 buildLevel();
 updateGroupPosition(player.group, player.position);
-const initialCameraPosition = zUpToYUpVector(0, -5.8, 3.8);
+const initialCameraPosition = zUpToYUpVector(0, -5.8, 8.0);
 camera.position.copy(initialCameraPosition);
 camera.lookAt(zUpToYUpVector(0, player.position.y + 20.0, player.position.z + 1.15));
 
