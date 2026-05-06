@@ -133,71 +133,71 @@ function buildPlayer() {
     };
 
     // ---------- TORSO ----------
-    const torso = createCube(1.5, 1.1, 1.7, COLORS.fur);
-    torso.position.set(0, 0, 1.55);
+    const torso = createCube(0.75, 0.55, 0.85, COLORS.fur);
+    torso.position.set(0, 0, 0.775);
     group.add(torso);
 
-    const belly = createCube(0.95, 0.75, 1.0, COLORS.belly);
-    belly.position.set(0, 0.58, 1.35);
+    const belly = createCube(0.475, 0.375, 0.5, COLORS.belly);
+    belly.position.set(0, 0.29, 0.675);
     group.add(belly);
 
     // ---------- WAIST / JEANS ----------
-    const hips = createCube(1.25, 1.0, 0.85, COLORS.jeans);
-    hips.position.set(0, 0, 0.65);
+    const hips = createCube(0.625, 0.5, 0.425, COLORS.jeans);
+    hips.position.set(0, 0, 0.325);
     group.add(hips);
 
     // ---------- HEAD ----------
-    const head = createCube(1.25, 1.15, 1.2, COLORS.fur);
-    head.position.set(0, 0, 2.75);
+    const head = createCube(0.625, 0.575, 0.6, COLORS.fur);
+    head.position.set(0, 0, 1.375);
     group.add(head);
 
     // Snout now points FORWARD (+Y)
-    const snout = createCube(0.55, 0.72, 0.45, COLORS.belly);
-    snout.position.set(0, 0.88, 2.45);
+    const snout = createCube(0.275, 0.36, 0.225, COLORS.belly);
+    snout.position.set(0, 0.44, 1.225);
     group.add(snout);
 
     // Nose
-    const nose = createCube(0.18, 0.18, 0.18, COLORS.nose);
-    nose.position.set(0, 1.28, 2.45);
+    const nose = createCube(0.09, 0.09, 0.09, COLORS.nose);
+    nose.position.set(0, 0.64, 1.225);
     group.add(nose);
 
     // ---------- EYES ----------
-    const eyeL = createCube(0.22, 0.16, 0.32, COLORS.eye);
-    eyeL.position.set(-0.22, 0.58, 3.05);
+    const eyeL = createCube(0.11, 0.08, 0.16, COLORS.eye);
+    eyeL.position.set(-0.11, 0.29, 1.525);
     group.add(eyeL);
 
-    const eyeR = createCube(0.22, 0.16, 0.32, COLORS.eye);
-    eyeR.position.set(0.22, 0.58, 3.05);
+    const eyeR = createCube(0.11, 0.08, 0.16, COLORS.eye);
+    eyeR.position.set(0.11, 0.29, 1.525);
     group.add(eyeR);
 
     // Pupils
-    const pupilL = createCube(0.08, 0.08, 0.12, COLORS.pupil);
-    pupilL.position.set(-0.22, 0.69, 3.02);
+    const pupilL = createCube(0.04, 0.04, 0.06, COLORS.pupil);
+    pupilL.position.set(-0.11, 0.345, 1.51);
     group.add(pupilL);
 
-    const pupilR = createCube(0.08, 0.08, 0.12, COLORS.pupil);
-    pupilR.position.set(0.22, 0.69, 3.02);
+    const pupilR = createCube(0.04, 0.04, 0.06, COLORS.pupil);
+    pupilR.position.set(0.11, 0.345, 1.51);
     group.add(pupilR);
 
     // Eyebrows
-    const browL = createCube(0.3, 0.08, 0.08, COLORS.brow);
-    browL.position.set(-0.22, 0.52, 3.32);
+    const browL = createCube(0.15, 0.04, 0.04, COLORS.brow);
+    browL.position.set(-0.11, 0.26, 1.66);
     browL.rotation.z = -0.25;
     group.add(browL);
 
-    const browR = createCube(0.3, 0.08, 0.08, COLORS.brow);
-    browR.position.set(0.22, 0.52, 3.32);
+    const browR = createCube(0.15, 0.04, 0.04, COLORS.brow);
+    browR.position.set(0.11, 0.26, 1.66);
     browR.rotation.z = 0.25;
     group.add(browR);
 
     // ---------- EARS ----------
-    const earL = createCube(0.22, 0.12, 0.48, COLORS.furDark);
-    earL.position.set(-0.52, 0.0, 3.55);
+    const earL = createCube(0.11, 0.06, 0.24, COLORS.furDark);
+    earL.position.set(-0.26, 0.0, 1.775);
     earL.rotation.x = -0.3;
     group.add(earL);
 
-    const earR = createCube(0.22, 0.12, 0.48, COLORS.furDark);
-    earR.position.set(0.52, 0.0, 3.55);
+    const earR = createCube(0.11, 0.06, 0.24, COLORS.furDark);
+    earR.position.set(0.26, 0.0, 1.775);
     earR.rotation.x = -0.3;
     group.add(earR);
 
@@ -205,19 +205,19 @@ function buildPlayer() {
     function createArm(side) {
         const arm = new THREE.Group();
 
-        const upper = createCube(0.34, 0.34, 0.7, COLORS.fur);
-        upper.position.set(0, 0, -0.35);
+        const upper = createCube(0.17, 0.17, 0.35, COLORS.fur);
+        upper.position.set(0, 0, -0.175);
         arm.add(upper);
 
-        const forearm = createCube(0.28, 0.28, 0.6, COLORS.furDark);
-        forearm.position.set(0, 0, -0.95);
+        const forearm = createCube(0.14, 0.14, 0.3, COLORS.furDark);
+        forearm.position.set(0, 0, -0.475);
         arm.add(forearm);
 
-        const glove = createCube(0.34, 0.34, 0.25, COLORS.glove);
-        glove.position.set(0, 0, -1.35);
+        const glove = createCube(0.17, 0.17, 0.125, COLORS.glove);
+        glove.position.set(0, 0, -0.675);
         arm.add(glove);
 
-        arm.position.set(side * 1.02, 0, 2.0);
+        arm.position.set(side * 0.51, 0, 1.0);
 
         return arm;
     }
@@ -229,19 +229,19 @@ function buildPlayer() {
     function createLeg(side) {
         const leg = new THREE.Group();
 
-        const thigh = createCube(0.42, 0.42, 0.75, COLORS.jeans);
-        thigh.position.set(0, 0, -0.4);
+        const thigh = createCube(0.21, 0.21, 0.375, COLORS.jeans);
+        thigh.position.set(0, 0, -0.2);
         leg.add(thigh);
 
-        const shin = createCube(0.34, 0.34, 0.65, COLORS.fur);
-        shin.position.set(0, 0, -1.0);
+        const shin = createCube(0.17, 0.17, 0.325, COLORS.fur);
+        shin.position.set(0, 0, -0.5);
         leg.add(shin);
 
-        const shoe = createCube(0.5, 0.9, 0.25, COLORS.shoe);
-        shoe.position.set(0, 0.2, -1.45);
+        const shoe = createCube(0.25, 0.45, 0.125, COLORS.shoe);
+        shoe.position.set(0, 0.1, -0.725);
         leg.add(shoe);
 
-        leg.position.set(side * 0.42, 0, 0.35);
+        leg.position.set(side * 0.21, 0, 0.175);
 
         return leg;
     }
@@ -251,15 +251,15 @@ function buildPlayer() {
 
     // ---------- HAIR SPIKES ----------
     function hairSpike(x, y, z, rotZ) {
-        const spike = createCube(0.16, 0.16, 0.52, COLORS.furDark);
+        const spike = createCube(0.08, 0.08, 0.26, COLORS.furDark);
         spike.position.set(x, y, z);
         spike.rotation.z = rotZ;
         group.add(spike);
     }
 
-    hairSpike(0, -0.15, 3.75, 0);
-    hairSpike(-0.18, -0.12, 3.62, -0.35);
-    hairSpike(0.18, -0.12, 3.62, 0.35);
+    hairSpike(0, -0.075, 1.875, 0);
+    hairSpike(-0.09, -0.06, 1.81, -0.35);
+    hairSpike(0.09, -0.06, 1.81, 0.35);
 
     // ---------- FORWARD FACING ----------
     // Character now faces +Y instead of +X
@@ -269,7 +269,7 @@ function buildPlayer() {
 
     return {
         group,
-        position: new THREE.Vector3(-1.5, 1.8, 0),
+        position: new THREE.Vector3(-0.75, 0.9, 0),
         velocity: new THREE.Vector3(0, 0, 0),
 
         // Facing forward
@@ -292,9 +292,9 @@ function buildPlayer() {
 
         hurtTimer: 0,
 
-        width: 1.4,
-        depth: 1.4,
-        height: 3.8,
+        width: 0.7,
+        depth: 0.7,
+        height: 1.9,
     };
 }
 
