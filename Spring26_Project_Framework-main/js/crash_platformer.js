@@ -48,6 +48,12 @@ const tempVecC = new THREE.Vector3();
 const tempVecD = new THREE.Vector3();
 const cameraCandidate = new THREE.Vector3();
 const cameraGradient = new THREE.Vector3();
+// Persistent camera state for optimization and soft-follow
+const cameraState = {
+    height: 3.2,
+    y: -6.0,
+    smoothY: -6.0,
+};
 
 function zUpToYUpVector(x, y, z) {
     const converted = convert_z_up_array_to_y_up_array([x, y, z]);
@@ -680,10 +686,60 @@ function updateEnemyLogic(deltaTime) {
     }
 }
 
-function updateCamera() {
-    const cameraPosition = zUpToYUpVector(0, player.position.y - 6.0, 3.2);
+function updateCamera(deltaTime) {
+    // Parameters for optimization and follow
+    const anticipateFactor = 0.35; // how much camera looks ahead based on player velocity
+    const followSpeed = 8.0; // smoothing speed for Y follow
+    const minHeight = 1.8;
+    const maxHeight = 6.0;
 
-    camera.position.copy(cameraPosition);
+    // Desired lateral/forward offset (player forward is +Y)
+    const desiredY = player.position.y - 6.0 + player.velocity.y * anticipateFactor;
+
+    // Smooth Y follow (exponential lerp)
+    const t = 1 - Math.exp(-followSpeed * deltaTime);
+    cameraState.smoothY += (desiredY - cameraState.smoothY) * t;
+
+    // Nonlinear height optimization: minimize projected screen Y error of the player
+    // We'll perform a couple of lightweight finite-difference steps per frame.
+    function projectedPlayerYForHeight(h) {
+        // position camera candidate and point it at the player (with slight forward look)
+        const camPos = zUpToYUpVector(0, cameraState.smoothY, h);
+        optimizationCamera.position.copy(camPos);
+        const lookAhead = player.position.y + Math.sign(player.velocity.y || 1) * 2.0 + player.velocity.y * 0.2;
+        const target = zUpToYUpVector(0, lookAhead, player.position.z + 0.9);
+        optimizationCamera.lookAt(target);
+        optimizationCamera.updateMatrixWorld();
+
+        // project player mid-point to NDC Y
+        const pw = zUpToYUpVector(0, player.position.y + player.velocity.y * 0.0, player.position.z + player.height * 0.5);
+        const proj = pw.clone().project(optimizationCamera);
+        return proj.y; // NDC Y in [-1,1], 0 is center
+    }
+
+    // tiny step for derivative estimate
+    const dh = 0.02;
+    let h = cameraState.height;
+    for (let iter = 0; iter < 2; iter++) {
+        const y0 = projectedPlayerYForHeight(h);
+        const f0 = y0 * y0;
+        const y1 = projectedPlayerYForHeight(h + dh);
+        const f1 = y1 * y1;
+        const deriv = (f1 - f0) / dh;
+        // gradient descent step (adaptive small step)
+        const lr = 0.8;
+        h = h - lr * deriv;
+        h = Math.max(minHeight, Math.min(maxHeight, h));
+    }
+    cameraState.height = h;
+
+    const cameraPosition = zUpToYUpVector(0, cameraState.smoothY, cameraState.height);
+    // Apply final camera transform with a gentle position lerp for stability
+    camera.position.lerp(cameraPosition, Math.min(1, 6 * deltaTime));
+
+    // Look ahead slightly so player's forward motion is visible
+    const lookTarget = zUpToYUpVector(0, player.position.y + Math.max(2.0, Math.abs(player.velocity.y) * 0.5), player.position.z + 0.9);
+    camera.lookAt(lookTarget);
 }
 
 function updateHUD() {
@@ -697,7 +753,7 @@ function updateScene() {
     updatePlayer(deltaTime);
     updateEnemyLogic(deltaTime);
     updateBoxes();
-    updateCamera();
+    updateCamera(deltaTime);
     updateHUD();
 }
 
