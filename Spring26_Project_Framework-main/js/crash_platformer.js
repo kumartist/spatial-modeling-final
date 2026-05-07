@@ -225,11 +225,13 @@ function buildPlayer() {
 
         arm.position.set(side * 0.51, 0, 1.0);
 
-        return arm;
+        return { group: arm, upper, forearm, glove };
     }
 
-    group.add(createArm(-1));
-    group.add(createArm(1));
+    const leftArm = createArm(-1);
+    const rightArm = createArm(1);
+    group.add(leftArm.group);
+    group.add(rightArm.group);
 
     // ---------- LEGS ----------
     function createLeg(side) {
@@ -249,11 +251,13 @@ function buildPlayer() {
 
         leg.position.set(side * 0.21, 0, 0.175);
 
-        return leg;
+        return { group: leg, thigh, shin, shoe };
     }
 
-    group.add(createLeg(-1));
-    group.add(createLeg(1));
+    const leftLeg = createLeg(-1);
+    const rightLeg = createLeg(1);
+    group.add(leftLeg.group);
+    group.add(rightLeg.group);
 
     // ---------- HAIR SPIKES ----------
     function hairSpike(x, y, z, rotZ) {
@@ -297,6 +301,11 @@ function buildPlayer() {
         spinCooldown: 0,
 
         hurtTimer: 0,
+
+        leftArm,
+        rightArm,
+        leftLeg,
+        rightLeg,
 
         width: 0.7,
         depth: 0.7,
@@ -670,6 +679,20 @@ function updatePlayer(deltaTime) {
     const qYaw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), player.baseYaw + spinAngle);
     const qTotal = qBase.clone().multiply(qFlip).multiply(qYaw);
     player.group.quaternion.copy(qTotal);
+
+    const runSpeed = Math.hypot(player.velocity.x, player.velocity.y);
+    const groundedRunSpeed = player.onGround ? clamp(runSpeed / 3.6, 0, 1) : 0;
+    const runPhase = engine.get_time_elapsed() * (10 + groundedRunSpeed * 8);
+    const armSwing = Math.sin(runPhase) * 0.6 * groundedRunSpeed;
+    const legSwing = Math.sin(runPhase + Math.PI) * 0.75 * groundedRunSpeed;
+
+    if (player.leftArm && player.rightArm && player.leftLeg && player.rightLeg) {
+        player.leftArm.group.rotation.x = player.onGround ? armSwing : 0;
+        player.rightArm.group.rotation.x = player.onGround ? -armSwing : 0;
+        player.leftLeg.group.rotation.x = player.onGround ? -legSwing : 0;
+        player.rightLeg.group.rotation.x = player.onGround ? legSwing : 0;
+    }
+
     z_up_set_object_position(player.group, player.position.x, player.position.y, player.position.z + 0.05 + walkBob);
 }
 
