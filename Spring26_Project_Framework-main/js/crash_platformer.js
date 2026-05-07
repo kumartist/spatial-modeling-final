@@ -689,12 +689,20 @@ function updateEnemyLogic(deltaTime) {
 function updateCamera(deltaTime) {
     // Parameters for optimization and follow
     const anticipateFactor = 0.35; // how much camera looks ahead based on player velocity
+    const backwardFactor = 1.8; // multiplier when player is walking backward
+    const backwardThreshold = -0.15; // velocity threshold to consider "walking backward"
     const followSpeed = 8.0; // smoothing speed for Y follow
     const minHeight = 1.8;
     const maxHeight = 6.0;
 
     // Desired lateral/forward offset (player forward is +Y)
-    const desiredY = player.position.y - 6.0 + player.velocity.y * anticipateFactor;
+    // Increase the anticipation multiplier when player is moving backward
+    let velY = player.velocity.y || 0;
+    let velFactor = anticipateFactor;
+    if (velY < backwardThreshold) {
+        velFactor *= backwardFactor;
+    }
+    const desiredY = player.position.y - 6.0 + velY * velFactor;
 
     // Smooth Y follow (exponential lerp)
     const t = 1 - Math.exp(-followSpeed * deltaTime);
