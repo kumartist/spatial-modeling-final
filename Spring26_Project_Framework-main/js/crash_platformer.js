@@ -685,10 +685,27 @@ function updatePlayer(deltaTime) {
     const runPhase = engine.get_time_elapsed() * (10 + groundedRunSpeed * 8);
     const armSwing = Math.sin(runPhase) * 0.6 * groundedRunSpeed;
     const legSwing = Math.sin(runPhase + Math.PI) * 0.75 * groundedRunSpeed;
+    const spinActive = player.spinTimer > 0;
 
     if (player.leftArm && player.rightArm && player.leftLeg && player.rightLeg) {
-        player.leftArm.group.rotation.x = player.onGround ? armSwing : 0;
-        player.rightArm.group.rotation.x = player.onGround ? -armSwing : 0;
+        if (spinActive) {
+            player.leftArm.group.rotation.x = -0.8;
+            player.leftArm.group.rotation.y = 1.15;
+            player.leftArm.group.rotation.z = 0.15;
+
+            player.rightArm.group.rotation.x = -0.8;
+            player.rightArm.group.rotation.y = -1.15;
+            player.rightArm.group.rotation.z = -0.15;
+        } else {
+            player.leftArm.group.rotation.x = player.onGround ? armSwing : 0;
+            player.leftArm.group.rotation.y = 0;
+            player.leftArm.group.rotation.z = 0;
+
+            player.rightArm.group.rotation.x = player.onGround ? -armSwing : 0;
+            player.rightArm.group.rotation.y = 0;
+            player.rightArm.group.rotation.z = 0;
+        }
+
         player.leftLeg.group.rotation.x = player.onGround ? -legSwing : 0;
         player.rightLeg.group.rotation.x = player.onGround ? legSwing : 0;
     }
