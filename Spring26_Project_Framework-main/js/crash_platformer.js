@@ -607,7 +607,7 @@ function updatePlayer(deltaTime) {
     player.position.x = clamp(player.position.x, -2.2, 2.2);
     player.position.y = clamp(player.position.y, 0.3, 44.5);
 
-    const groundHeight = getGroundHeight(player.position.x, player.position.y);
+    const groundHeight = getGroundHeight(player.position.x, player.position.y) + 0.5;
     if (player.position.z < groundHeight) {
         player.position.z = groundHeight;
         player.velocity.z = 0;
